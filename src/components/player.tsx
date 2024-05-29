@@ -151,6 +151,8 @@ export const Player = ({ roomName }: { roomName: string }) => {
                 xhr.setRequestHeader('Referer', "")
               }
             }
+            // provider.instance.loadSource(playerState?.url)
+            // provider.instance.attachMedia(player.current)
         }
     }
 
@@ -163,6 +165,7 @@ export const Player = ({ roomName }: { roomName: string }) => {
                 src={playerState.url}
                 crossorigin
                 playsinline
+                preferNativeHLS={true}
                 onProviderChange={onProviderChange}
                 ref={player}
             >
