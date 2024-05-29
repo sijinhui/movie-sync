@@ -161,7 +161,7 @@ export const Player = ({ roomName }: { roomName: string }) => {
                 className="w-full aspect-video bg-slate-900 text-white font-sans overflow-hidden rounded-md ring-media-focus data-[focus]:ring-4"
                 title="test"
                 src={playerState.url}
-                crossorigin
+                crossorigin="anonymous"
                 playsinline
                 onProviderChange={onProviderChange}
                 ref={player}
