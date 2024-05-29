@@ -19,7 +19,7 @@ export default function Page() {
     const roomName = router.query.room as string
     return (
         <div className='flex flex-col lg:flex-row m-2 justify-center'>
-            {roomName && url && <div className='w-full lg:mr-2'>
+            {roomName && userInfo?.username && <div className='w-full lg:mr-2'>
                 <Player roomName={roomName} />
             </div>}
             <div className='w-full lg:w-[450px] mb-1 border rounded'>
