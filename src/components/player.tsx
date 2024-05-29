@@ -5,7 +5,7 @@ import {
     MediaPlayerInstance,
     isHLSProvider,
     MediaProviderAdapter,
-    MediaProviderChangeEvent,
+    MediaProviderChangeEvent, isHTMLMediaElement, isVideoProvider,
 } from '@vidstack/react';
 import { VideoLayout } from './video-control';
 import { useEffect, useRef, useState } from 'react';
@@ -151,8 +151,18 @@ export const Player = ({ roomName }: { roomName: string }) => {
                 xhr.setRequestHeader('Referer', "")
               }
             }
-            // provider.instance.loadSource(playerState?.url)
-            // provider.instance.attachMedia(player.current)
+        }
+        if (isVideoProvider(provider)) {
+            if (playerState?.url) {
+                const hls = new HLS();
+                hls.loadSource(playerState?.url)
+                hls.attachMedia(provider.video)
+                if (!provider.video.src) {
+                    provider.video.src = playerState?.url
+                }
+            }
+            // hls.loadSource(provider.loadSource())
+
         }
     }
 
@@ -163,7 +173,7 @@ export const Player = ({ roomName }: { roomName: string }) => {
                 className="w-full aspect-video bg-slate-900 text-white font-sans overflow-hidden rounded-md ring-media-focus data-[focus]:ring-4"
                 title="test"
                 src={playerState.url}
-                crossorigin
+                crossorigin="anonymous"
                 playsinline
                 preferNativeHLS={true}
                 onProviderChange={onProviderChange}
