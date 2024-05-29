@@ -145,6 +145,12 @@ export const Player = ({ roomName }: { roomName: string }) => {
     ) {
         if (isHLSProvider(provider)) {
             provider.library = HLS;
+            provider.config = {
+              ...provider.config,
+              xhrSetup: function (xhr, url) {
+                xhr.setRequestHeader('Referer', "")
+              }
+            }
         }
     }
 
