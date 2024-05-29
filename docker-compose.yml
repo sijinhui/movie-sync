@@ -1,0 +1,15 @@
+version: "3.3"
+services:
+  movie-sync:
+    container_name: movie-sync
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: "host"
+    environment:
+      - TZ=Asia/Shanghai
+    env_file:
+      - .env
+    volumes:
+      - /etc/localtime:/etc/localtime
