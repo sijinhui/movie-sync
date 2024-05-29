@@ -2,6 +2,7 @@ version: "3.3"
 services:
   movie-sync:
     container_name: movie-sync
+    image: registry.cn-hangzhou.aliyuncs.com/si-private/movie-sync
     restart: always
     build:
       context: .
