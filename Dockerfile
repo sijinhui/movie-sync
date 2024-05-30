@@ -1,4 +1,5 @@
 FROM hub.siji.ci/library/node:20 AS frontend
+RUN npm install -g pnpm
 WORKDIR /app
 COPY . .
 RUN pnpm install && pnpm run build
