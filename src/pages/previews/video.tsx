@@ -12,7 +12,34 @@ import { TiWarning } from "solid-icons/ti"
 // import { Box, Center } from "@hope-ui/solid"
 
 // const navigate = useNavigate()
+Artplayer.DEBUG = true;
 
+export interface Data {
+  drive_id: string
+  file_id: string
+  video_preview_play_info: VideoPreviewPlayInfo
+}
+export interface VideoPreviewPlayInfo {
+  category: string
+  live_transcoding_task_list: LiveTranscodingTaskList[]
+  meta: Meta
+}
+
+export interface LiveTranscodingTaskList {
+  stage: string
+  status: string
+  template_height: number
+  template_id: string
+  template_name: string
+  template_width: number
+  url: string
+}
+
+export interface Meta {
+  duration: number
+  height: number
+  width: number
+}
 
 export const AutoHeightPlugin = (player: Artplayer) => {
   const { $container, $video } = player.template
@@ -37,8 +64,8 @@ export const AutoHeightPlugin = (player: Artplayer) => {
 
 const Preview = () => {
   // const { pathname } = useRouter()
-  const videoRef = useRef(null);
-  const artRef = useRef(null); // 用于存储 Artplayer 实例
+  // const videoRef = useRef(null);
+  // const art = useRef<Artplayer>(null);
   // let videos = objStore.objs.filter((obj) => obj.type === ObjType.VIDEO)
   // const next_video = () => {
   //   const index = videos.findIndex((f) => f.name === objStore.obj.name)
@@ -62,7 +89,7 @@ const Preview = () => {
   // }
   let player: Artplayer
   let option: Option = {
-    id: "pathname",
+    id: "123123fsafa",
     container: "#video-player",
     title: "objStore.obj.name",
     volume: 0.5,
@@ -116,7 +143,13 @@ const Preview = () => {
     type: "m3u8",
     customType: {
       m3u8: function (video: HTMLMediaElement, url: string) {
-        const hls = new Hls()
+        const hls = new Hls({
+          xhrSetup: function (xhr) {
+            xhr.timeout = 10000;
+            xhr.setRequestHeader('Referer', "")
+          }
+        })
+        console.log('------', url, video)
         hls.loadSource(url)
         hls.attachMedia(video)
         if (!video.src) {
@@ -141,42 +174,129 @@ const Preview = () => {
     //             method: "video_preview",
     //         }),
     // )
-  let interval: number
-  let curSeek: number
     useEffect(() => {
-      if (videoRef.current) {
         // 获取文件信息
+        const url = "https://a.xiaosi.cc/d/ali-data/zccsh.1080p.HD%E5%9B%BD%E8%AF%AD%E4%B8%AD%E5%AD%97%5B%E6%9C%80%E6%96%B0%E7%94%B5%E5%BD%B1www.dygangs.me%5D.mp4"
         //   option.url = 'https://ccp-bj29-video-preview.oss-enet.aliyuncs.com/lt/52D58ACA15F651452D9185E86DF6DB5694DDA1CB_3285584355__sha1_bj29_e7792192/FHD/media.m3u8?di=bj29&dr=599137413&f=66571a18c4524a06c8754523bbdf849cd348ccdc&pds-params=%7B%22ap%22%3A%2276917ccccd4441c39457a04f6084fb2f%22%7D&security-token=CAISvgJ1q6Ft5B2yfSjIr5eED%2FeHi6dY8bqfWlP9glMlb%2BVHn%2FLFuzz2IHhMf3NpBOkZvvQ1lGlU6%2Fcalq5rR4QAXlDfNVrtWg7DqFHPWZHInuDox55m4cTXNAr%2BIhr%2F29CoEIedZdjBe%2FCrRknZnytou9XTfimjWFrXWv%2Fgy%2BQQDLItUxK%2FcCBNCfpPOwJms7V6D3bKMuu3OROY6Qi5TmgQ41Uh1jgjtPzkkpfFtkGF1GeXkLFF%2B97DRbG%2FdNRpMZtFVNO44fd7bKKp0lQLs0ARrv4r1fMUqW2X543AUgFLhy2KKMPY99xpFgh9a7j0iCbSGyUu%2FhcRm5sw9%2Byfo34lVYnew7VH9373LuHwufJ7FxfIREfquk63pvSlHLcLPe0Kjzzleo2k1XRPVFF%2B535IaHXuToXDnvSiGTWbEfXtuMkagAFv98qR64E7y9hB0ostiE%2FisGdNOenzrzdHiUadTKVIumPqSyl8AlyuTGTgdYovpI%2BTzPdt7eQSx0JWNh9nkC%2F5IrsNnYdxxoSlDByCXK356nlMjdv18D5RxgopL1xRBLDmNMgmR5foGh7UwOBs36OAqePT7LMKMr%2F%2BeJdX6j1TayAA&u=cee43ef94a86411c9337a6d84bd431b5&x-oss-access-key-id=STS.NT1DM3fxyFxtXuLfSpcjkp7nY&x-oss-expires=1717037491&x-oss-process=hls%2Fsign%2Cparams_ZGksZHIsZix1LHBkcy1wYXJhbXM%3D&x-oss-signature=1MDzVex5QbzEgXSFHjrYm41hglWM6jjCu7qNZEWR42Q%3D&x-oss-signature-version=OSS2'
-        option.url = "https://a.xiaosi.cc/d/ali-data/zccsh.1080p.HD%E5%9B%BD%E8%AF%AD%E4%B8%AD%E5%AD%97%5B%E6%9C%80%E6%96%B0%E7%94%B5%E5%BD%B1www.dygangs.me%5D.mp4"
+        if (url.includes('/d/')) {
+          const [fetchHost, fetchData] = url.split("/d/")
+          console.log('------', fetchHost, fetchData)
+          fetch(`${fetchHost}/api/auth/login`, {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({username: "dav", password: "sjh666"})
+          }).then(response => response.json()).then((token) => {
+            console.log('token', token)
+            fetch(`${fetchHost}/api/fs/other`, {
+              method: "POST",
+              body: JSON.stringify({method: "video_preview", password: "", path: `/${decodeURIComponent(fetchData)}`}),
+              headers: {
+                Authorization: `${token.data.token}`,
+                'Content-Type': 'application/json'
+              },
+            }).then((response) => response.json())
+                .then((result) => result.data).then((data: Data) => {
+              const list = data.video_preview_play_info.live_transcoding_task_list.filter(
+                  (l) => l.url,
+              )
+              if (list.length === 0) {
+                console.log('No transcoding video found')
+                return
+              }
+              option.url = list[list.length - 1].url
+              option.type = "m3u8"
+              option.quality = list.map((item, i) => {
+                return {
+                  html: item.template_id,
+                  url: item.url,
+                  default: i === list.length - 1,
+                }
+              })
+              // option.url = url
+              if (typeof player === "undefined") {
+                console.log('-----', "出厂化")
+                player = new Artplayer(option);
+                let auto_fullscreen: boolean = false
+                player.on("ready", () => {
+                  player.fullscreen = auto_fullscreen
+                })
+                player.on("error", (error, reconnectTime) => {
+                  console.log('123213123123', error, reconnectTime)
+                })
+                player.on("error", (error, reconnectTime) => {
+                  console.log('-----------', error, reconnectTime)
+                })
+                // interval = window.setInterval(resetPlayUrl, 1000 * 60 * 14)
+              }
+            })
+          })
 
-        player = new Artplayer(option);
-        let auto_fullscreen: boolean = false
-        player.on("ready", () => {
-          player.fullscreen = auto_fullscreen
-        })
-        curSeek = player.currentTime
-        setTimeout(() => {
-          player.seek = curSeek
-        }, 1000)
-        // player.on("video:ended", () => {
-        // if (!autoNext()) return
-        // next_video()
-        // })
-      }
-      return () => {
-        if (videoRef.current) {
-          player?.destroy()
-          window.clearInterval(interval)
+
         }
+
+      return () => {
+        // if (player && player.destroy) {
+        //   player.destroy(false);
+        // }
+        player?.destroy();
+        window.clearInterval(interval)
       }
     }, []);
 
+  let interval: number
+  let curSeek: number
+  async function resetPlayUrl() {
+    // option.url = "https://a.xiaosi.cc/d/ali-data/zccsh.1080p.HD%E5%9B%BD%E8%AF%AD%E4%B8%AD%E5%AD%97%5B%E6%9C%80%E6%96%B0%E7%94%B5%E5%BD%B1www.dygangs.me%5D.mp4"
+    if (option.url.includes('/d/')) {
+      const [fetchHost, fetchData] = option.url.split("/d/")
+      console.log('------', fetchHost, fetchData)
+      fetch(`${fetchHost}/api/fs/other`, {
+        method: "POST",
+        body: JSON.stringify({method: "video_preview", password: "", path: `/${decodeURIComponent(fetchData)}`}),
+        headers: {
+          Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicHdkX3RzIjoxNzE2ODkzNzY3LCJleHAiOjE3MTcyMTkzODMsIm5iZiI6MTcxNzA0NjU4MywiaWF0IjoxNzE3MDQ2NTgzfQ.qZN5u4syvfdTVeMDp9W6Iv4jUY-U_FpIfl6cHjjB7W8",
+          'Content-Type': 'application/json'
+        },
+      }).then((response) => response.json())
+        .then((result) => result.data).then((data: Data) => {
+          const list =
+              data.video_preview_play_info.live_transcoding_task_list.filter(
+                  (l) => l.url,
+              )
+          if (list.length === 0) {
+            console.log("No transcoding video found")
+            return
+          }
+          const quality = list.map((item, i) => {
+            return {
+              html: item.template_id,
+              url: item.url,
+              default: i === list.length - 1,
+            }
+          })
+          option.quality = quality
+          player.quality = quality
+          curSeek = player.currentTime
+          let curPlaying = player.playing
+          player.switchUrl(quality[quality.length - 1].url)
+              .then(
+                  () => {
+                    if (!curPlaying) player.pause()
+                    setTimeout(() => {
+                      player.seek = curSeek
+                    }, 1000)
+                  }
+              )
+        })
+    }}
 
-    const [autoNext, setAutoNext] = useState(false)
+    // const [autoNext, setAutoNext] = useState(false)
     const [warnVisible, setWarnVisible] = useState(false)
     return (
         <div >
-            <div style={{width: "100%", height: "60vh"}} id="video-player" ref={videoRef} />
+            <div style={{width: "100%", height: "60vh"}} id="video-player"/>
             {warnVisible &&
                 <div>
                     <div style={{width: "100%", height: "60vh", backgroundColor: "black"}} >

@@ -7,7 +7,8 @@ import { ClientMessage } from '@/lib/types/message';
 import { $playerState, $userInfo } from '@/store/player';
 import { useStore } from '@nanostores/react';
 import { useRouter } from 'next/router'
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
+import {Data} from "@/pages/previews/video";
 
 export default function Page() {
     const router = useRouter()
@@ -15,6 +16,53 @@ export default function Page() {
     const playerState = useStore($playerState);
     const [url, setUrl] = useState<string | undefined>();
     const [urlInput, setUrlInput] = useState<string | undefined>();
+
+    useEffect(() => {
+        console.log('---------', url)
+        $playerState.set({ ...playerState, url: url })
+        socket.emit('setUrl', JSON.stringify({
+            room: roomName,
+            username: userInfo?.username,
+            url: url
+        } as ClientMessage))
+    }, [url]);
+
+    const parseUrl = (urlInput: string) => {
+        if (urlInput.includes('/d/')) {
+            const [fetchHost, fetchData] = urlInput.split("/d/")
+            console.log('------', fetchHost, fetchData)
+            fetch(`${fetchHost}/api/auth/login`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({username: "dav", password: "sjh666"})
+            }).then(response => response.json()).then((token) => {
+                console.log('token', token)
+                fetch(`${fetchHost}/api/fs/other`, {
+                    method: "POST",
+                    body: JSON.stringify({method: "video_preview", password: "", path: `/${decodeURIComponent(fetchData)}`}),
+                    headers: {
+                        Authorization: `${token.data.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                }).then((response) => response.json())
+                    .then((result) => result.data).then((data: Data) => {
+                    const list = data.video_preview_play_info.live_transcoding_task_list.filter(
+                        (l) => l.url,
+                    )
+                    if (list.length === 0) {
+                        console.log('No transcoding video found')
+                        return
+                    }
+                    setUrl(list[list.length - 1].url)
+                    return list[list.length - 1].url
+                })
+            })
+        } else {
+            return urlInput
+        }
+    }
 
     const roomName = router.query.room as string
     return (
@@ -40,13 +88,7 @@ export default function Page() {
                         setUrlInput(e.target.value)
                     }} placeholder='视频直链' />
                     <Button onClick={() => {
-                        setUrl(urlInput)
-                        $playerState.set({ ...playerState, url: urlInput })
-                        socket.emit('setUrl', JSON.stringify({
-                            room: roomName,
-                            username: userInfo?.username,
-                            url: urlInput
-                        } as ClientMessage))
+                         parseUrl(urlInput as string)
                     }} >修改链接</Button>
                 </div>}
                 {roomName && <UserList roomName={roomName} />}
