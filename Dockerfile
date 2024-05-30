@@ -1,7 +1,7 @@
 FROM hub.siji.ci/library/node:20 AS frontend
 WORKDIR /app
 COPY . .
-RUN npm install && npm run build
+RUN pnpm install && pnpm run build
 
 FROM hub.siji.ci/library/golang:1.21 AS builder
 WORKDIR /app
