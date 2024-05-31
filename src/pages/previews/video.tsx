@@ -60,35 +60,35 @@ const Preview = () => {
 
   let player: Artplayer
   let option: Option = {
-    id: "123123fsafa",
+    id: "123",
     container: "#video-player",
     title: "objStore.obj.name",
     volume: 0.5,
     autoplay: true,
     autoSize: false,
     autoMini: true,
-    controls: [
-      {
-        name: "previous-button",
-        index: 10,
-        position: "left",
-        html: '<svg fill="none" stroke-width="2" xmlns="http://www.w3.org/2000/svg" height="22" width="22" class="icon icon-tabler icon-tabler-player-track-prev-filled" width="1em" height="1em" viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="overflow: visible; color: currentcolor;"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M20.341 4.247l-8 7a1 1 0 0 0 0 1.506l8 7c.647 .565 1.659 .106 1.659 -.753v-14c0 -.86 -1.012 -1.318 -1.659 -.753z" stroke-width="0" fill="currentColor"></path><path d="M9.341 4.247l-8 7a1 1 0 0 0 0 1.506l8 7c.647 .565 1.659 .106 1.659 -.753v-14c0 -.86 -1.012 -1.318 -1.659 -.753z" stroke-width="0" fill="currentColor"></path></svg>',
-        tooltip: "Previous",
-        // click: function () {
-        //   previous_video()
-        // },
-      },
-      {
-        name: "next-button",
-        index: 11,
-        position: "left",
-        html: '<svg fill="none" stroke-width="2" xmlns="http://www.w3.org/2000/svg" height="22" width="22" class="icon icon-tabler icon-tabler-player-track-next-filled" width="1em" height="1em" viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="overflow: visible; color: currentcolor;"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M2 5v14c0 .86 1.012 1.318 1.659 .753l8 -7a1 1 0 0 0 0 -1.506l-8 -7c-.647 -.565 -1.659 -.106 -1.659 .753z" stroke-width="0" fill="currentColor"></path><path d="M13 5v14c0 .86 1.012 1.318 1.659 .753l8 -7a1 1 0 0 0 0 -1.506l-8 -7c-.647 -.565 -1.659 -.106 -1.659 .753z" stroke-width="0" fill="currentColor"></path></svg>',
-        tooltip: "Next",
-        // click: function () {
-        //   next_video()
-        // },
-      },
-    ],
+    // controls: [
+    //   {
+    //     name: "previous-button",
+    //     index: 10,
+    //     position: "left",
+    //     html: '<svg fill="none" stroke-width="2" xmlns="http://www.w3.org/2000/svg" height="22" width="22" class="icon icon-tabler icon-tabler-player-track-prev-filled" width="1em" height="1em" viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="overflow: visible; color: currentcolor;"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M20.341 4.247l-8 7a1 1 0 0 0 0 1.506l8 7c.647 .565 1.659 .106 1.659 -.753v-14c0 -.86 -1.012 -1.318 -1.659 -.753z" stroke-width="0" fill="currentColor"></path><path d="M9.341 4.247l-8 7a1 1 0 0 0 0 1.506l8 7c.647 .565 1.659 .106 1.659 -.753v-14c0 -.86 -1.012 -1.318 -1.659 -.753z" stroke-width="0" fill="currentColor"></path></svg>',
+    //     tooltip: "Previous",
+    //     // click: function () {
+    //     //   previous_video()
+    //     // },
+    //   },
+    //   {
+    //     name: "next-button",
+    //     index: 11,
+    //     position: "left",
+    //     html: '<svg fill="none" stroke-width="2" xmlns="http://www.w3.org/2000/svg" height="22" width="22" class="icon icon-tabler icon-tabler-player-track-next-filled" width="1em" height="1em" viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="overflow: visible; color: currentcolor;"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M2 5v14c0 .86 1.012 1.318 1.659 .753l8 -7a1 1 0 0 0 0 -1.506l-8 -7c-.647 -.565 -1.659 -.106 -1.659 .753z" stroke-width="0" fill="currentColor"></path><path d="M13 5v14c0 .86 1.012 1.318 1.659 .753l8 -7a1 1 0 0 0 0 -1.506l-8 -7c-.647 -.565 -1.659 -.106 -1.659 .753z" stroke-width="0" fill="currentColor"></path></svg>',
+    //     tooltip: "Next",
+    //     // click: function () {
+    //     //   next_video()
+    //     // },
+    //   },
+    // ],
     loop: false,
     flip: true,
     playbackRate: true,
@@ -111,15 +111,28 @@ const Preview = () => {
       "webkit-playsinline": true,
       playsInline: true,
     },
-    type: "m3u8",
+    type: "m3u82",
     customType: {
       m3u8: function (video: HTMLMediaElement, url: string) {
         const hls = new Hls()
-        console.log('------', url, video)
         hls.loadSource(url)
         hls.attachMedia(video)
         if (!video.src) {
           video.src = url
+        }
+      },
+      m3u82: function (video: HTMLMediaElement, url: string, art) {
+        if (Hls.isSupported()) {
+          if (art.hls) art.hls.destroy();
+          const hls = new Hls();
+          hls.loadSource(url);
+          hls.attachMedia(video);
+          art.hls = hls;
+          art.on('destroy', () => hls.destroy());
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = url;
+        } else {
+          art.notice.show = 'Unsupported playback format: m3u8';
         }
       },
     },
@@ -173,7 +186,7 @@ const Preview = () => {
                 return
               }
               option.url = list[list.length - 1].url
-              option.type = "m3u8"
+              // option.url = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
               option.quality = list.map((item, i) => {
                 return {
                   html: item.template_id,
@@ -189,13 +202,7 @@ const Preview = () => {
                 player.on("ready", () => {
                   player.fullscreen = auto_fullscreen
                 })
-                player.on("error", (error, reconnectTime) => {
-                  console.log('123213123123', error, reconnectTime)
-                })
-                player.on("error", (error, reconnectTime) => {
-                  console.log('-----------', error, reconnectTime)
-                })
-                // interval = window.setInterval(resetPlayUrl, 1000 * 60 * 14)
+                interval = window.setInterval(resetPlayUrl, 1000 * 60 * 14)
               }
             })
           })
@@ -207,7 +214,7 @@ const Preview = () => {
         // if (player && player.destroy) {
         //   player.destroy(false);
         // }
-        player?.destroy();
+        player?.destroy(true);
         window.clearInterval(interval)
       }
     }, []);
@@ -263,10 +270,10 @@ const Preview = () => {
     const [warnVisible, setWarnVisible] = useState(false)
     return (
         <div >
-            <div style={{width: "100%", height: "60vh"}} id="video-player"/>
+            <div style={{width: "100%", height: "520px"}} id="video-player"/>
             {warnVisible &&
                 <div>
-                    <div style={{width: "100%", height: "60vh", backgroundColor: "black"}} >
+                    <div style={{width: "100%", height: "520px", backgroundColor: "black"}} >
                     </div>
                 </div>
             }
