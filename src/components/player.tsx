@@ -145,12 +145,12 @@ export const Player = ({ roomName }: { roomName: string }) => {
     ) {
         if (isHLSProvider(provider)) {
             provider.library = HLS;
-            provider.config = {
-              ...provider.config,
-              xhrSetup: function (xhr, url) {
-                xhr.setRequestHeader('Referer', "")
-              }
-            }
+            // provider.config = {
+            //   ...provider.config,
+            //   xhrSetup: function (xhr, url) {
+            //     xhr.setRequestHeader('Referer', "")
+            //   }
+            // }
         }
         if (isVideoProvider(provider)) {
             if (playerState?.url) {
@@ -184,5 +184,5 @@ export const Player = ({ roomName }: { roomName: string }) => {
                 <VideoLayout roomName={roomName} />
             </MediaPlayer>}
         </div>
-    );
+    )
 }
