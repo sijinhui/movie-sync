@@ -3,15 +3,9 @@ import { type Option } from "artplayer/types/option"
 import { type Setting } from "artplayer/types/setting"
 import { type Events } from "artplayer/types/events"
 import Hls from "hls.js";
-import { useRouter } from "next/router";
-import { usePathname } from 'next/navigation'
-import {useEffect, useRef, useState} from "react";
-// import {Data} from "@/pages/previews/aliyun_video";
-// import { AutoHeightPlugin, VideoBox } from "./video_box"
-import { TiWarning } from "solid-icons/ti"
-// import { Box, Center } from "@hope-ui/solid"
 
-// const navigate = useNavigate()
+import {useEffect, useRef, useState} from "react";
+
 Artplayer.DEBUG = true;
 
 export interface Data {
@@ -63,37 +57,14 @@ export const AutoHeightPlugin = (player: Artplayer) => {
 
 
 const Preview = () => {
-  // const { pathname } = useRouter()
-  // const videoRef = useRef(null);
-  // const art = useRef<Artplayer>(null);
-  // let videos = objStore.objs.filter((obj) => obj.type === ObjType.VIDEO)
-  // const next_video = () => {
-  //   const index = videos.findIndex((f) => f.name === objStore.obj.name)
-  //   if (index < videos.length - 1) {
-  //     navigate(
-  //       pathJoin(pathDir(location.pathname), videos[index + 1].name) +
-  //       "?auto_fullscreen=" +
-  //       player.fullscreen,
-  //     )
-  //   }
-  // }
-  // const previous_video = () => {
-  //   const index = videos.findIndex((f) => f.name === objStore.obj.name)
-  //   if (index > 0) {
-  //     navigate(
-  //       pathJoin(pathDir(location.pathname), videos[index - 1].name) +
-  //       "?auto_fullscreen=" +
-  //       player.fullscreen,
-  //     )
-  //   }
-  // }
+
   let player: Artplayer
   let option: Option = {
     id: "123123fsafa",
     container: "#video-player",
     title: "objStore.obj.name",
     volume: 0.5,
-    autoplay: false,
+    autoplay: true,
     autoSize: false,
     autoMini: true,
     controls: [
@@ -143,12 +114,7 @@ const Preview = () => {
     type: "m3u8",
     customType: {
       m3u8: function (video: HTMLMediaElement, url: string) {
-        const hls = new Hls({
-          xhrSetup: function (xhr) {
-            xhr.timeout = 10000;
-            xhr.setRequestHeader('Referer', "")
-          }
-        })
+        const hls = new Hls()
         console.log('------', url, video)
         hls.loadSource(url)
         hls.attachMedia(video)
@@ -181,6 +147,7 @@ const Preview = () => {
         if (url.includes('/d/')) {
           const [fetchHost, fetchData] = url.split("/d/")
           console.log('------', fetchHost, fetchData)
+          option.id = `/${decodeURIComponent(fetchData)}`
           fetch(`${fetchHost}/api/auth/login`, {
             method: "POST",
             headers: {

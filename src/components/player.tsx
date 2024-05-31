@@ -179,8 +179,8 @@ export const Player = ({ roomName }: { roomName: string }) => {
                 onProviderChange={onProviderChange}
                 ref={player}
             >
-                <MediaProvider>
-                </MediaProvider>
+                {/*<MediaProvider>*/}
+                {/*</MediaProvider>*/}
                 <VideoLayout roomName={roomName} />
             </MediaPlayer>}
         </div>
