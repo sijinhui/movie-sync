@@ -8,7 +8,7 @@ import { $playerState, $userInfo } from '@/store/player';
 import { useStore } from '@nanostores/react';
 import { useRouter } from 'next/router'
 import {useEffect, useState} from 'react';
-import {Data} from "@/pages/previews/video";
+import {Data} from "@/components/video";
 
 export default function Page() {
     const router = useRouter()

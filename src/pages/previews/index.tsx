@@ -1,5 +1,5 @@
 // import Preview from "@/pages/previews/aliyun_video";
-import Preview from "@/pages/previews/video";
+import Preview from "@/components/video";
 import { useRouter } from "next/router";
 import { Flex, Button, Space, Input, Card } from "antd";
 import { useState } from "react";
