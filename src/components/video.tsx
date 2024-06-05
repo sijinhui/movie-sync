@@ -1,10 +1,11 @@
 import Artplayer from "artplayer"
-import { type Option } from "artplayer/types/option"
-import { type Setting } from "artplayer/types/setting"
-import { type Events } from "artplayer/types/events"
+import {type Option} from "artplayer/types/option"
 import Hls from "hls.js";
-
+import { $playerState, $userInfo, $userStatus } from '@/store/player';
 import {useEffect, useRef, useState} from "react";
+import {useStore as useNanoStore} from "@nanostores/react";
+import {ClientMessage, ServerMessage} from "@/lib/types/message";
+import {socket} from "@/components/socket";
 
 Artplayer.DEBUG = true;
 
@@ -56,17 +57,24 @@ export const AutoHeightPlugin = (player: Artplayer) => {
 }
 
 
-const Preview = () => {
-
+const Preview = ({ roomName }: { roomName: string }) => {
+  // const [url, setUrl] = useState();
+  const playerRef = useRef<Artplayer>(null);
+  const userinfo = useNanoStore($userInfo);
+  const playerState = useNanoStore($playerState)
+  const [canPlay, setCanPlay] = useState(false);
   let player: Artplayer
   let option: Option = {
     id: "123",
-    container: "#video-player",
+    // container: "#video-player",
+    // container: playerRef.current,
     title: "objStore.obj.name",
+    url: playerState?.url ?? "",
     volume: 0.5,
     autoplay: true,
     autoSize: false,
     autoMini: true,
+    controls: [],
     // controls: [
     //   {
     //     name: "previous-button",
@@ -145,132 +153,186 @@ const Preview = () => {
     autoOrientation: true,
     airplay: true,
   }
-    // const [loading, post] = useFetch(
-    //     (): PResp<Data> =>
-    //         r.post("/fs/other", {
-    //             path: pathname(),
-    //             password: password(),
-    //             method: "video_preview",
-    //         }),
-    // )
+
+  useEffect(() => {
+    if (typeof player === "undefined") {
+      return
+    }
+    // return () => {
+    //   if (player.playing) {
+    //     socket.emit("setTime", JSON.stringify({
+    //       username: userinfo?.username,
+    //       time: Math.ceil(player.currentTime),
+    //       room: roomName
+    //     } as ClientMessage))
+    //   }
+    //   // player.seek =
+    //   console.log('--------', player.currentTime)
+    // }
+
+  }, [userinfo, roomName, playerState?.url]);
+
+
+
     useEffect(() => {
         // 获取文件信息
-        const url = "https://a.xiaosi.cc/d/ali-data/zccsh.1080p.HD%E5%9B%BD%E8%AF%AD%E4%B8%AD%E5%AD%97%5B%E6%9C%80%E6%96%B0%E7%94%B5%E5%BD%B1www.dygangs.me%5D.mp4"
-        //   option.url = 'https://ccp-bj29-video-preview.oss-enet.aliyuncs.com/lt/52D58ACA15F651452D9185E86DF6DB5694DDA1CB_3285584355__sha1_bj29_e7792192/FHD/media.m3u8?di=bj29&dr=599137413&f=66571a18c4524a06c8754523bbdf849cd348ccdc&pds-params=%7B%22ap%22%3A%2276917ccccd4441c39457a04f6084fb2f%22%7D&security-token=CAISvgJ1q6Ft5B2yfSjIr5eED%2FeHi6dY8bqfWlP9glMlb%2BVHn%2FLFuzz2IHhMf3NpBOkZvvQ1lGlU6%2Fcalq5rR4QAXlDfNVrtWg7DqFHPWZHInuDox55m4cTXNAr%2BIhr%2F29CoEIedZdjBe%2FCrRknZnytou9XTfimjWFrXWv%2Fgy%2BQQDLItUxK%2FcCBNCfpPOwJms7V6D3bKMuu3OROY6Qi5TmgQ41Uh1jgjtPzkkpfFtkGF1GeXkLFF%2B97DRbG%2FdNRpMZtFVNO44fd7bKKp0lQLs0ARrv4r1fMUqW2X543AUgFLhy2KKMPY99xpFgh9a7j0iCbSGyUu%2FhcRm5sw9%2Byfo34lVYnew7VH9373LuHwufJ7FxfIREfquk63pvSlHLcLPe0Kjzzleo2k1XRPVFF%2B535IaHXuToXDnvSiGTWbEfXtuMkagAFv98qR64E7y9hB0ostiE%2FisGdNOenzrzdHiUadTKVIumPqSyl8AlyuTGTgdYovpI%2BTzPdt7eQSx0JWNh9nkC%2F5IrsNnYdxxoSlDByCXK356nlMjdv18D5RxgopL1xRBLDmNMgmR5foGh7UwOBs36OAqePT7LMKMr%2F%2BeJdX6j1TayAA&u=cee43ef94a86411c9337a6d84bd431b5&x-oss-access-key-id=STS.NT1DM3fxyFxtXuLfSpcjkp7nY&x-oss-expires=1717037491&x-oss-process=hls%2Fsign%2Cparams_ZGksZHIsZix1LHBkcy1wYXJhbXM%3D&x-oss-signature=1MDzVex5QbzEgXSFHjrYm41hglWM6jjCu7qNZEWR42Q%3D&x-oss-signature-version=OSS2'
-        if (url.includes('/d/')) {
-          const [fetchHost, fetchData] = url.split("/d/")
-          console.log('------', fetchHost, fetchData)
-          option.id = `/${decodeURIComponent(fetchData)}`
-          fetch(`${fetchHost}/api/auth/login`, {
-            method: "POST",
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({username: "dav", password: "sjh666"})
-          }).then(response => response.json()).then((token) => {
-            console.log('token', token)
-            fetch(`${fetchHost}/api/fs/other`, {
-              method: "POST",
-              body: JSON.stringify({method: "video_preview", password: "", path: `/${decodeURIComponent(fetchData)}`}),
-              headers: {
-                Authorization: `${token.data.token}`,
-                'Content-Type': 'application/json'
-              },
-            }).then((response) => response.json())
-                .then((result) => result.data).then((data: Data) => {
-              const list = data.video_preview_play_info.live_transcoding_task_list.filter(
-                  (l) => l.url,
-              )
-              if (list.length === 0) {
-                console.log('No transcoding video found')
-                return
-              }
-              option.url = list[list.length - 1].url
-              // option.url = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
-              option.quality = list.map((item, i) => {
-                return {
-                  html: item.template_id,
-                  url: item.url,
-                  default: i === list.length - 1,
-                }
-              })
-              // option.url = url
-              if (typeof player === "undefined") {
-                console.log('-----', "出厂化")
-                player = new Artplayer(option);
-                let auto_fullscreen: boolean = false
-                player.on("ready", () => {
-                  player.fullscreen = auto_fullscreen
-                })
-                interval = window.setInterval(resetPlayUrl, 1000 * 60 * 14)
-              }
-            })
-          })
+      if (!playerRef.current || !playerState?.url) {
+        return
+      }
+      console.log('-----', "出厂化", option)
 
 
-        }
+      player = new Artplayer({
+        ...option,
+        // @ts-ignore
+        container: playerRef.current,
+      })
+      let auto_fullscreen: boolean = false
+      player.on("ready", () => {
+        player.fullscreen = auto_fullscreen
+      })
+      player.on('video:canplay', () => {
+        setCanPlay(true);
+      });
+      player.on('video:seeking', () => {
+        socket.emit("setTime", JSON.stringify({
+          username: userinfo?.username,
+          time: Math.ceil(player.currentTime),
+          room: roomName
+        } as ClientMessage))
+      })
+      player.on('video:play', () => {
+        socket.emit('play', JSON.stringify({
+          room: roomName,
+          username: userinfo?.username
+        } as ClientMessage))
+      })
+      player.on('video:pause', () => {
+        socket.emit('pause', JSON.stringify({
+          room: roomName,
+          username: userinfo?.username
+        } as ClientMessage))
+      })
+
+      // if (typeof player === "undefined") {
+      //
+      // }
 
       return () => {
-        // if (player && player.destroy) {
-        //   player.destroy(false);
-        // }
-        player?.destroy(true);
-        window.clearInterval(interval)
+        player?.destroy();
       }
-    }, []);
+    }, [playerState?.url]);
 
-  let interval: number
-  let curSeek: number
-  async function resetPlayUrl() {
-    // option.url = "https://a.xiaosi.cc/d/ali-data/zccsh.1080p.HD%E5%9B%BD%E8%AF%AD%E4%B8%AD%E5%AD%97%5B%E6%9C%80%E6%96%B0%E7%94%B5%E5%BD%B1www.dygangs.me%5D.mp4"
-    if (option.url.includes('/d/')) {
-      const [fetchHost, fetchData] = option.url.split("/d/")
-      console.log('------', fetchHost, fetchData)
-      fetch(`${fetchHost}/api/fs/other`, {
-        method: "POST",
-        body: JSON.stringify({method: "video_preview", password: "", path: `/${decodeURIComponent(fetchData)}`}),
-        headers: {
-          Authorization: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicHdkX3RzIjoxNzE2ODkzNzY3LCJleHAiOjE3MTcyMTkzODMsIm5iZiI6MTcxNzA0NjU4MywiaWF0IjoxNzE3MDQ2NTgzfQ.qZN5u4syvfdTVeMDp9W6Iv4jUY-U_FpIfl6cHjjB7W8",
-          'Content-Type': 'application/json'
-        },
-      }).then((response) => response.json())
-        .then((result) => result.data).then((data: Data) => {
-          const list =
-              data.video_preview_play_info.live_transcoding_task_list.filter(
-                  (l) => l.url,
-              )
-          if (list.length === 0) {
-            console.log("No transcoding video found")
-            return
-          }
-          const quality = list.map((item, i) => {
-            return {
-              html: item.template_id,
-              url: item.url,
-              default: i === list.length - 1,
-            }
-          })
-          option.quality = quality
-          player.quality = quality
-          curSeek = player.currentTime
-          let curPlaying = player.playing
-          player.switchUrl(quality[quality.length - 1].url)
-              .then(
-                  () => {
-                    if (!curPlaying) player.pause()
-                    setTimeout(() => {
-                      player.seek = curSeek
-                    }, 1000)
-                  }
-              )
-        })
-    }}
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!player) {
+        return
+      }
+      console.log('----------', player.currentTime, player.playing)
+      socket.emit("updateMyInfo", JSON.stringify({
+        username: userinfo?.username,
+        time: Math.ceil(player.currentTime),
+        room: roomName,
+        playing: player.playing
+      } as ClientMessage))
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [])
 
-    // const [autoNext, setAutoNext] = useState(false)
+  useEffect(() => {
+    function onConnect() {
+      console.log('connected');
+    }
+
+    function onDisconnect(e: any, d: any) {
+      console.log('disconnected, reason', e, d);
+      socket.connect();
+    }
+
+    function onRootInit(d: any) {
+      const msg = JSON.parse(d) as ServerMessage
+      console.log('root init', msg);
+      $playerState.set({
+        url: msg.url,
+        inited: true
+      })
+    }
+    function onRoomInfo(d: any) {
+      console.log('get room info response', JSON.parse(d) as ServerMessage);
+      const msg = JSON.parse(d) as ServerMessage
+      if (!msg.userStatus) {
+        return
+      }
+      $userStatus.set([
+        ...msg.userStatus
+      ])
+      const mintime = Math.min(...msg.userStatus.map(user => user?.time ?? Infinity));
+      if (player && Math.abs(player.currentTime - mintime) > 10) {
+        player.currentTime = mintime
+      }
+    }
+
+    function onPause() {
+      console.log('pause');
+      if (player) {
+        player.pause();
+      }
+    }
+
+    function onPlay() {
+      console.log('play');
+      if (player && canPlay) {
+        player.play();
+      }
+    }
+
+    function onSetTime(d: any) {
+      console.log('set time: ', JSON.parse(d) as ServerMessage);
+      const msg = JSON.parse(d) as ServerMessage
+      const distUser = msg.userStatus?.find((u) => u.username === msg.actionEmitter)
+      if (distUser && distUser.username !== userinfo?.username) {
+        if (player && distUser.time) {
+          player.currentTime = distUser.time
+        }
+      }
+    }
+    function onSetUrl(d: any) {
+      console.log('set url: ', JSON.parse(d) as ServerMessage);
+      const msg = JSON.parse(d) as ServerMessage
+      $playerState.set({
+        url: msg.url
+      })
+    }
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('rootinit', onRootInit);
+    socket.on('roomInfo', onRoomInfo)
+    socket.on('pause', onPause)
+    socket.on('play', onPlay)
+    socket.on('setTime', onSetTime)
+    socket.on('setUrl', onSetUrl)
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('rootinit', onRootInit);
+      socket.off('roomInfo', onRoomInfo)
+      socket.off('pause', onPause)
+      socket.off('play', onPlay)
+      socket.off('setTime', onSetTime)
+      socket.off('setUrl', onSetUrl)
+    }
+  }, [userinfo]);
+
     const [warnVisible, setWarnVisible] = useState(false)
-    return (
+
+
+  return (
         <div >
-            <div style={{width: "100%", height: "520px"}} id="video-player"/>
+            <div
+                // @ts-ignore
+                ref={playerRef}
+                style={{width: "100%", height: "520px"}} />
             {warnVisible &&
                 <div>
                     <div style={{width: "100%", height: "520px", backgroundColor: "black"}} >
