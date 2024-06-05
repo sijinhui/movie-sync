@@ -1,4 +1,5 @@
 FROM hub.siji.ci/library/node:20 AS frontend
+RUN npm config set registry 'https://registry.npmmirror.com/'
 RUN npm install -g pnpm
 WORKDIR /app
 COPY . .
