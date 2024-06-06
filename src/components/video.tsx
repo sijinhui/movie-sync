@@ -7,7 +7,7 @@ import {useStore as useNanoStore} from "@nanostores/react";
 import {ClientMessage, ServerMessage} from "@/lib/types/message";
 import {socket} from "@/components/socket";
 
-Artplayer.DEBUG = true;
+// Artplayer.DEBUG = true;
 
 export interface Data {
   drive_id: string
@@ -59,7 +59,7 @@ export const AutoHeightPlugin = (player: Artplayer) => {
 
 const Preview = ({ roomName }: { roomName: string }) => {
   // const [url, setUrl] = useState();
-  const playerRef = useRef<Artplayer>(null);
+  const playerRef = useRef<HTMLDivElement>(null);
   const userinfo = useNanoStore($userInfo);
   const playerState = useNanoStore($playerState)
   const [canPlay, setCanPlay] = useState(false);
@@ -71,7 +71,7 @@ const Preview = ({ roomName }: { roomName: string }) => {
     title: "objStore.obj.name",
     url: playerState?.url ?? "",
     volume: 0.5,
-    autoplay: true,
+    autoplay: false,
     autoSize: false,
     autoMini: true,
     controls: [],
@@ -153,64 +153,79 @@ const Preview = ({ roomName }: { roomName: string }) => {
     autoOrientation: true,
     airplay: true,
   }
+  useEffect(() => {
+    // 初始化播放器
+    if (!playerRef.current || !playerState?.url) {
+      return
+    }
+    console.log('-----', "出厂化", option)
+
+    player = new Artplayer({
+      ...option,
+      container: playerRef.current,
+    })
+    let auto_fullscreen: boolean = false
+    player.on("ready", () => {
+      player.fullscreen = auto_fullscreen
+      socket.emit("setTime", JSON.stringify({
+        username: userinfo?.username,
+        time: Math.ceil(player.currentTime),
+        room: roomName
+      } as ClientMessage))
+    })
+    player.on('video:canplay', () => {
+      setCanPlay(true);
+    });
+    player.on('video:seeking', () => {
+      socket.emit("setTime", JSON.stringify({
+        username: userinfo?.username,
+        time: Math.ceil(player.currentTime),
+        room: roomName
+      } as ClientMessage))
+    })
+    player.on('video:seeked', () => {
+      // 跳转之后发送暂停信号，防止播放状态不同步
+      socket.emit('pause', JSON.stringify({
+        room: roomName,
+        username: userinfo?.username
+      } as ClientMessage))
+    })
+    player.on('video:play', () => {
+      socket.emit('play', JSON.stringify({
+        room: roomName,
+        username: userinfo?.username
+      } as ClientMessage))
+    })
+    player.on('video:pause', () => {
+      socket.emit('pause', JSON.stringify({
+        room: roomName,
+        username: userinfo?.username
+      } as ClientMessage))
+    })
+
+    return () => {
+      player?.destroy();
+    }
+  }, [playerState?.url]);
 
   useEffect(() => {
+    console.log('in ---- url change，', playerState?.url, player)
     if (typeof player === "undefined" || !player) {
       return
     }
+    console.log('in2 ---- url change，', playerState?.url)
+
     if (playerState?.url && player.url != playerState.url) {
       player.switch = playerState?.url
+      console.log('-----url change')
     }
-  }, [userinfo, roomName, playerState?.url]);
 
-    useEffect(() => {
-        // 获取文件信息
-      if (!playerRef.current) {
-        return
-      }
-      console.log('-----', "出厂化", option)
+  }, [playerState?.url]);
 
+  // useEffect(() => {
+  //
+  // }, [roomName, userinfo?.username]);
 
-      player = new Artplayer({
-        ...option,
-        // @ts-ignore
-        container: playerRef.current,
-      })
-      let auto_fullscreen: boolean = false
-      player.on("ready", () => {
-        player.fullscreen = auto_fullscreen
-      })
-      player.on('video:canplay', () => {
-        setCanPlay(true);
-      });
-      player.on('video:seeking', () => {
-        socket.emit("setTime", JSON.stringify({
-          username: userinfo?.username,
-          time: Math.ceil(player.currentTime),
-          room: roomName
-        } as ClientMessage))
-      })
-      player.on('video:play', () => {
-        socket.emit('play', JSON.stringify({
-          room: roomName,
-          username: userinfo?.username
-        } as ClientMessage))
-      })
-      player.on('video:pause', () => {
-        socket.emit('pause', JSON.stringify({
-          room: roomName,
-          username: userinfo?.username
-        } as ClientMessage))
-      })
-
-      // if (typeof player === "undefined") {
-      //
-      // }
-
-      return () => {
-        player?.destroy();
-      }
-    }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {

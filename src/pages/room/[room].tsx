@@ -10,7 +10,7 @@ import { useStore } from '@nanostores/react';
 import { useRouter } from 'next/router'
 import {useEffect, useState} from 'react';
 import {Data} from "@/components/video";
-import {Card, Flex} from "antd";
+import {Card, Flex, Row, Col} from "antd";
 
 export default function Page() {
     const router = useRouter()
@@ -69,46 +69,58 @@ export default function Page() {
 
     const roomName = router.query.room as string
     return (
-        <div className='flex flex-col lg:flex-row m-2 justify-center'>
-            <Flex>
-                <div className='w-full lg:mr-2'>
-                    {/*<Player roomName={roomName} />*/}
-                    <Card style={{ marginTop: "20px", height: "560px"}}>
-                        <Preview roomName={roomName} />
-                    </Card>
+        <div className=''>
+            <div style={{maxWidth: "600px"}}>
 
-                </div>
-                <div className='w-full lg:w-[450px] mb-1 border rounded'>
-                    {roomName && <div className='m-2 flex flex-row gap-2'>
-                        <Input onChange={(e) => {
-                            $userInfo.set({ username: e.target.value })
-                        }} placeholder='你的用户名' />
-                        <Button onClick={() => {
-                            socket.connect();
-                            socket.emit('join', JSON.stringify({
-                                username: userInfo?.username,
-                                room: roomName,
-                            } as ClientMessage));
-                        }}>加入房间</Button>
-                    </div>}
-                    {userInfo?.username && <div className='m-2 flex flex-row gap-2'>
-                        <Input key={playerState?.url} defaultValue={playerState?.url} onChange={(e) => {
-                            setUrlInput(e.target.value)
-                        }} placeholder='视频直链' />
-                        <Button onClick={() => {
-                            setUrl(urlInput)
-                            $playerState.set({ ...playerState, url: urlInput })
-                            socket.emit('setUrl', JSON.stringify({
-                                room: roomName,
-                                username: userInfo?.username,
-                                url: urlInput
-                            } as ClientMessage))
-                            // parseUrl(urlInput as string)
-                        }} >修改链接</Button>
-                    </div>}
-                    {roomName && <UserList roomName={roomName} />}
-                </div>
-            </Flex>
 
+            <Row gutter={16}>
+                <Col span={16}>
+                    <div style={{maxWidth: "510px"}}>
+                        {roomName && <div className='m-2 flex flex-row gap-2'>
+                            <Input onChange={(e) => {
+                                $userInfo.set({ username: e.target.value })
+                            }} placeholder='你的用户名' />
+                            <Button onClick={() => {
+                                socket.connect();
+                                socket.emit('join', JSON.stringify({
+                                    username: userInfo?.username,
+                                    room: roomName,
+                                } as ClientMessage));
+                            }}>加入房间</Button>
+                        </div>}
+                        {userInfo?.username && <div className='m-2 flex flex-row gap-2'>
+                            <Input key={playerState?.url} defaultValue={playerState?.url} onChange={(e) => {
+                                setUrlInput(e.target.value)
+                            }} placeholder='视频直链' />
+                            <Button onClick={() => {
+                                setUrl(urlInput)
+                                $playerState.set({ ...playerState, url: urlInput })
+                                socket.emit('setUrl', JSON.stringify({
+                                    room: roomName,
+                                    username: userInfo?.username,
+                                    url: urlInput
+                                } as ClientMessage))
+                                // parseUrl(urlInput as string)
+                            }} >修改链接</Button>
+                        </div>}
+                        <div style={{height: "auto"}}>{roomName && <UserList roomName={roomName} />}</div>
+
+                    </div>
+                </Col>
+
+
+            </Row>
+            <Row>
+                <Col>
+                    <div className='w-full'>
+                        {/*<Player roomName={roomName} />*/}
+                        <Card style={{ marginTop: "20px", height: "560px", width: "560px"}}>
+                            <Preview roomName={roomName} />
+                        </Card>
+
+                    </div>
+                </Col>
+            </Row>
+            </div>
         </div>)
 }
