@@ -31,7 +31,7 @@ export default function Previews() {
           </Button>
         </Space>
         <Card style={{ marginTop: "20px", height: "560px"}}>
-          <Preview />
+          <Preview roomName={"s"}/>
         </Card>
       </Flex>
     </div>

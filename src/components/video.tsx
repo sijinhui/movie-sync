@@ -155,28 +155,17 @@ const Preview = ({ roomName }: { roomName: string }) => {
   }
 
   useEffect(() => {
-    if (typeof player === "undefined") {
+    if (typeof player === "undefined" || !player) {
       return
     }
-    // return () => {
-    //   if (player.playing) {
-    //     socket.emit("setTime", JSON.stringify({
-    //       username: userinfo?.username,
-    //       time: Math.ceil(player.currentTime),
-    //       room: roomName
-    //     } as ClientMessage))
-    //   }
-    //   // player.seek =
-    //   console.log('--------', player.currentTime)
-    // }
-
+    if (playerState?.url && player.url != playerState.url) {
+      player.switch = playerState?.url
+    }
   }, [userinfo, roomName, playerState?.url]);
-
-
 
     useEffect(() => {
         // 获取文件信息
-      if (!playerRef.current || !playerState?.url) {
+      if (!playerRef.current) {
         return
       }
       console.log('-----', "出厂化", option)
@@ -221,7 +210,7 @@ const Preview = ({ roomName }: { roomName: string }) => {
       return () => {
         player?.destroy();
       }
-    }, [playerState?.url]);
+    }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -274,14 +263,14 @@ const Preview = ({ roomName }: { roomName: string }) => {
 
     function onPause() {
       console.log('pause');
-      if (player) {
+      if (player && player.playing) {
         player.pause();
       }
     }
 
     function onPlay() {
       console.log('play');
-      if (player && canPlay) {
+      if (player && !player.playing) {
         player.play();
       }
     }
