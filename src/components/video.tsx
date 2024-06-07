@@ -119,17 +119,9 @@ const Preview = ({ roomName }: { roomName: string }) => {
       "webkit-playsinline": true,
       playsInline: true,
     },
-    type: "m3u82",
+    // type: "m3u8",
     customType: {
-      m3u8: function (video: HTMLMediaElement, url: string) {
-        const hls = new Hls()
-        hls.loadSource(url)
-        hls.attachMedia(video)
-        if (!video.src) {
-          video.src = url
-        }
-      },
-      m3u82: function (video: HTMLMediaElement, url: string, art) {
+      m3u8: function (video: HTMLMediaElement, url: string, art) {
         if (Hls.isSupported()) {
           if (art.hls) art.hls.destroy();
           const hls = new Hls();
