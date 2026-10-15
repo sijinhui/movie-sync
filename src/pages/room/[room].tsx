@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { UserList } from '@/components/user-list';
 import { ClientMessage } from '@/lib/types/message';
-import { $playerState, $userInfo } from '@/store/player';
+import { $joinedRoom, $playerState, $userInfo } from '@/store/player';
 import { useStore } from '@nanostores/react';
 import { useRouter } from 'next/router'
 import {useEffect, useState} from 'react';
@@ -15,6 +15,7 @@ import {Card, Flex, Row, Col} from "antd";
 export default function Page() {
     const router = useRouter()
     const userInfo = useStore($userInfo);
+    const joinedRoom = useStore($joinedRoom);
     const playerState = useStore($playerState);
     const [url, setUrl] = useState<string | undefined>();
     const [urlInput, setUrlInput] = useState<string | undefined>();
@@ -68,6 +69,25 @@ export default function Page() {
     // }
 
     const roomName = router.query.room as string
+
+    // 断线重连（例如 iPad 锁屏/切后台）后会拿到新的 socket id，服务端已把旧连接移出房间，
+    // 所以重连成功后需要自动重新加入，否则收不到 play/pause/setTime 广播
+    useEffect(() => {
+        if (!joinedRoom || joinedRoom.room !== roomName) {
+            return
+        }
+        const rejoin = () => {
+            socket.emit('join', JSON.stringify({
+                username: joinedRoom.username,
+                room: joinedRoom.room,
+            } as ClientMessage))
+        }
+        socket.on('connect', rejoin)
+        return () => {
+            socket.off('connect', rejoin)
+        }
+    }, [joinedRoom, roomName])
+
     return (
         <div className=''>
             <div style={{maxWidth: "600px"}}>
@@ -81,6 +101,9 @@ export default function Page() {
                                 $userInfo.set({ username: e.target.value })
                             }} placeholder='你的用户名' />
                             <Button onClick={() => {
+                                if (userInfo?.username) {
+                                    $joinedRoom.set({ room: roomName, username: userInfo.username })
+                                }
                                 socket.connect();
                                 socket.emit('join', JSON.stringify({
                                     username: userInfo?.username,
