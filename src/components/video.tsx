@@ -63,7 +63,7 @@ const Preview = ({ roomName }: { roomName: string }) => {
   const userinfo = useNanoStore($userInfo);
   const playerState = useNanoStore($playerState)
   const [canPlay, setCanPlay] = useState(false);
-  let player: Artplayer
+  const artRef = useRef<Artplayer | null>(null)
   let option: Option = {
     id: "123",
     // container: "#video-player",
@@ -152,10 +152,11 @@ const Preview = ({ roomName }: { roomName: string }) => {
     }
     console.log('-----', "出厂化", option)
 
-    player = new Artplayer({
+    const player = new Artplayer({
       ...option,
       container: playerRef.current,
     })
+    artRef.current = player
     let auto_fullscreen: boolean = false
     player.on("ready", () => {
       player.fullscreen = auto_fullscreen
@@ -197,10 +198,12 @@ const Preview = ({ roomName }: { roomName: string }) => {
 
     return () => {
       player?.destroy();
+      artRef.current = null;
     }
   }, [playerState?.url]);
 
   useEffect(() => {
+    const player = artRef.current
     console.log('in ---- url change，', playerState?.url, player)
     if (typeof player === "undefined" || !player) {
       return
@@ -221,6 +224,7 @@ const Preview = ({ roomName }: { roomName: string }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      const player = artRef.current
       if (!player) {
         return
       }
@@ -254,6 +258,7 @@ const Preview = ({ roomName }: { roomName: string }) => {
       })
     }
     function onRoomInfo(d: any) {
+      const player = artRef.current
       console.log('get room info response', JSON.parse(d) as ServerMessage);
       const msg = JSON.parse(d) as ServerMessage
       if (!msg.userStatus) {
@@ -269,6 +274,7 @@ const Preview = ({ roomName }: { roomName: string }) => {
     }
 
     function onPause() {
+      const player = artRef.current
       console.log('pause');
       if (player && player.playing) {
         player.pause();
@@ -276,6 +282,7 @@ const Preview = ({ roomName }: { roomName: string }) => {
     }
 
     function onPlay() {
+      const player = artRef.current
       console.log('play');
       if (player && !player.playing) {
         player.play();
@@ -283,6 +290,7 @@ const Preview = ({ roomName }: { roomName: string }) => {
     }
 
     function onSetTime(d: any) {
+      const player = artRef.current
       console.log('set time: ', JSON.parse(d) as ServerMessage);
       const msg = JSON.parse(d) as ServerMessage
       const distUser = msg.userStatus?.find((u) => u.username === msg.actionEmitter)

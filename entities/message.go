@@ -19,6 +19,6 @@ type ServerMessage struct {
 type UserStatus struct {
 	UserID   string `json:"userID,omitempty"`
 	UserName string `json:"username,omitempty"`
-	Time     int64  `json:"time,omitempty"`
+	Time     int64  `json:"time"`
 	Playing  bool   `json:"playing,omitempty"`
 }

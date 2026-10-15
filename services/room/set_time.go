@@ -9,6 +9,9 @@ import (
 func SetTimeEndpoint(client *socket.Socket, cliMsg *entities.ClientMessage) []byte {
 	room, showName, time := cliMsg.Room, cliMsg.UserName, cliMsg.Time
 	if r, ok := entities.GetCinema().GetRoom(room); ok {
+		for _, u := range r.GetUsers() {
+			u.SetTime(time)
+		}
 		r.Broadcast("setTime", entities.ServerMessage{
 			ActionFrom:    "client",
 			ActionEmitter: showName,
@@ -18,9 +21,6 @@ func SetTimeEndpoint(client *socket.Socket, cliMsg *entities.ClientMessage) []by
 			ActionFrom:    "client",
 			ActionEmitter: showName,
 		})
-		for _, u := range r.GetUsers() {
-			u.SetTime(time)
-		}
 	}
 	return nil
 }

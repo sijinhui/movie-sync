@@ -116,7 +116,6 @@ func (r *RoomImpl) Broadcast(event string, message ServerMessage) {
 	if event == "setTime" {
 		if r.setTimeLock.TryLock() {
 			logrus.Infof("set time lock")
-			r.setTimeLock.Lock()
 			go func() {
 				time.Sleep(time.Millisecond * 10)
 				r.setTimeLock.Unlock()
